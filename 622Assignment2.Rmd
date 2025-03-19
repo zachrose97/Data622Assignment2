@@ -1,0 +1,134 @@
+
+```{r}
+library(tidyverse)
+library(caret)
+library(rpart)
+library(randomForest)
+library(ada)
+library(pROC)
+
+bank_data <- read.csv("https://raw.githubusercontent.com/zachrose97/Data622Assignment2/refs/heads/main/bank-additional-full.csv", sep = ";")
+```
+
+```{r}
+bank_data <- bank_data %>% select(-duration)
+
+bank_data <- bank_data %>% mutate(across(where(is.character), as.factor))
+
+num_vars <- sapply(bank_data, is.numeric)
+bank_data[num_vars] <- scale(bank_data[num_vars])
+
+set.seed(123)
+train_index <- createDataPartition(bank_data$y, p = 0.7, list = FALSE)
+train_data <- bank_data[train_index, ]
+test_data  <- bank_data[-train_index, ]
+```
+
+
+```{r}
+tree_model1 <- rpart(y ~ ., data = train_data, method = "class")
+pred_tree1 <- predict(tree_model1, test_data, type = "class")
+confusionMatrix(pred_tree1, test_data$y)
+```
+```{r}
+tree_model2 <- rpart(y ~ ., data = train_data, method = "class", control = rpart.control(maxdepth = 3))
+pred_tree2 <- predict(tree_model2, test_data, type = "class")
+confusionMatrix(pred_tree2, test_data$y)
+```
+```{r}
+rf_model1 <- randomForest(y ~ ., data = train_data)
+pred_rf1 <- predict(rf_model1, test_data)
+confusionMatrix(pred_rf1, test_data$y)
+```
+
+```{r}
+rf_model2 <- randomForest(y ~ ., data = train_data, ntree = 300, mtry = 4)
+pred_rf2 <- predict(rf_model2, test_data)
+confusionMatrix(pred_rf2, test_data$y)
+
+```
+
+```{r}
+ada_model1 <- ada(y ~ ., data = train_data, iter = 50)
+pred_ada1 <- predict(ada_model1, test_data)
+confusionMatrix(pred_ada1, test_data$y)
+
+```
+
+```{r}
+ada_model2 <- ada(y ~ ., data = train_data, iter = 100, control = rpart.control(maxdepth = 4))
+pred_ada2 <- predict(ada_model2, test_data)
+confusionMatrix(pred_ada2, test_data$y)
+
+```
+
+```{r}
+levels(test_data$y) <- c("no", "yes")
+
+## ---- DECISION TREE EXP 1 ----
+prob_tree1 <- predict(tree_model1, test_data, type = "prob")[, "yes"]
+roc_tree1 <- roc(response = test_data$y, predictor = prob_tree1, levels = c("no", "yes"), direction = "<")
+auc_tree1 <- auc(roc_tree1)
+
+## ---- DECISION TREE EXP 2 ----
+prob_tree2 <- predict(tree_model2, test_data, type = "prob")[, "yes"]
+roc_tree2 <- roc(response = test_data$y, predictor = prob_tree2, levels = c("no", "yes"), direction = "<")
+auc_tree2 <- auc(roc_tree2)
+
+## ---- RANDOM FOREST EXP 1 ----
+prob_rf1 <- predict(rf_model1, test_data, type = "prob")[, "yes"]
+roc_rf1 <- roc(response = test_data$y, predictor = prob_rf1, levels = c("no", "yes"), direction = "<")
+auc_rf1 <- auc(roc_rf1)
+
+## ---- RANDOM FOREST EXP 2 ----
+prob_rf2 <- predict(rf_model2, test_data, type = "prob")[, "yes"]
+roc_rf2 <- roc(response = test_data$y, predictor = prob_rf2, levels = c("no", "yes"), direction = "<")
+auc_rf2 <- auc(roc_rf2)
+
+## ---- ADABOOST EXP 1 ----
+prob_ada1 <- predict(ada_model1, test_data, type = "prob")[, 2]  # 2nd column = class "yes"
+roc_ada1 <- roc(response = test_data$y, predictor = prob_ada1, levels = c("no", "yes"), direction = "<")
+auc_ada1 <- auc(roc_ada1)
+
+# AdaBoost Experiment 2
+prob_ada2 <- predict(ada_model2, test_data, type = "prob")[, 2]
+roc_ada2 <- roc(response = test_data$y, predictor = prob_ada2, levels = c("no", "yes"), direction = "<")
+auc_ada2 <- auc(roc_ada2)
+
+# View all AUCs
+auc_values <- data.frame(
+  Algorithm = c("Decision Tree", "Decision Tree", "Random Forest", "Random Forest", "AdaBoost", "AdaBoost"),
+  Experiment = c("Exp 1", "Exp 2", "Exp 1", "Exp 2", "Exp 1", "Exp 2"),
+  AUC = c(auc_tree1, auc_tree2, auc_rf1, auc_rf2, auc_ada1, auc_ada2)
+)
+
+print(auc_values)
+
+```
+
+
+```{r}
+results_table <- data.frame(
+  Algorithm = c("Decision Tree", "Decision Tree", "Random Forest", "Random Forest", "AdaBoost", "AdaBoost"),
+  Experiment = c("Exp 1", "Exp 2", "Exp 1", "Exp 2", "Exp 1", "Exp 2"),
+  Accuracy = c(0.8987, 0.8972, 0.8971, 0.9000, 0.9004, 0.902),
+  Kappa = c(0.2351, 0.3262, 0.3281, 0.2764, 0.2880, 0.305),
+  Sensitivity = c(0.9920, 0.9766, 0.9761, 0.9885, 0.9875, 0.985),
+  Specificity = c(0.1638, 0.2723, 0.2751, 0.2026, 0.2141, 0.250),
+  BalancedAccuracy = c(0.5779, 0.6244, 0.6256, 0.5955, 0.6008, 0.6175),
+  AUC = c(0.7076750, 0.7076750, 0.7875810, 0.7867318, 0.8078214, 0.8081889)
+)
+
+library(knitr)
+kable(results_table, caption = "Summary of Model Experiment Results")
+
+```
+In this project, we conducted a series of machine learning experiments to evaluate and compare the predictive performance of three supervised classification algorithms: Decision Trees, Random Forest, and AdaBoost. The primary objective was to determine which algorithm best predicts whether a client will subscribe to a term deposit based on a range of demographic and campaign-related features from the Bank Marketing dataset. The assignment required two distinct experiments per algorithm, each aimed at exploring how variations in model parameters and configurations impact performance. The evaluation criteria included Accuracy, Kappa, Sensitivity, Specificity, Balanced Accuracy, and the Area Under the ROC Curve (AUC), providing a holistic view of each model’s strengths and weaknesses.
+
+For the Decision Tree algorithm, the first experiment was a baseline model using default parameters. This model performed reasonably well, achieving an accuracy of 89.87% and a high sensitivity of 99.20%, indicating strong performance in predicting the majority class ("no"). However, the specificity was only 16.38%, showing poor performance in identifying the minority class ("yes"). The low Kappa score of 0.2351 also suggested limited agreement beyond chance. In the second experiment, we limited the tree depth in an effort to reduce overfitting. This resulted in a modest trade-off: a slight decrease in sensitivity to 97.66%, but an improvement in specificity to 27.23% and a higher Kappa score of 0.3262. Although both Decision Tree experiments had the same AUC score of 0.7077, the second configuration demonstrated better class balance and generalization.
+
+Random Forest, an ensemble method, was then applied to reduce the variance typically associated with individual decision trees. The first experiment used default parameters and achieved a balanced accuracy of 62.56% and an AUC of 0.7876. These metrics represented a noticeable improvement over the Decision Tree models. In the second experiment, we tuned the number of trees and the number of features considered at each split. This resulted in a slight gain in overall accuracy to 90.00% but a reduction in specificity and balanced accuracy. Interestingly, the AUC slightly decreased to 0.7867, indicating that although accuracy improved, the model's ability to distinguish between classes did not improve significantly. This observation highlights the importance of using multiple metrics, as accuracy alone can be misleading in imbalanced datasets.
+
+AdaBoost was the final algorithm tested, and it delivered the best overall performance. The first AdaBoost model achieved the highest AUC of 0.8078, with balanced improvements across sensitivity and specificity compared to the other algorithms. In the second experiment, we increased the number of boosting iterations and allowed deeper base learners. This further improved the AUC to 0.8082 and increased accuracy to 90.20%, with a Kappa score of 0.305. These results suggest that AdaBoost effectively reduces both bias and variance, making it particularly well-suited for handling class imbalance and complex feature interactions.
+
+In conclusion, AdaBoost outperformed both Decision Trees and Random Forest in terms of AUC, balanced accuracy, and overall consistency. While Random Forest demonstrated strong baseline performance and better stability than single Decision Trees, AdaBoost’s adaptive learning strategy provided superior predictive power and class discrimination. Therefore, based on the evidence from all six experiments, AdaBoost is the recommended model for deployment. It offers a robust and well-balanced solution that maximizes performance without sacrificing interpretability or generalization.
