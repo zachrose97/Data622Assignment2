@@ -1,0 +1,41 @@
+Role,City,Average_Salary,National_Avg,Percent_Above_National
+Data Architect,"San Francisco, CA",168645,142087,16
+Data Architect,Remote,163804,142087,13
+Data Architect,"New York City, NY",160830,142087,12
+Data Architect,Greater Denver Area,159200,142087,11
+Data Architect,"Chicago, IL",156029,142087,9
+Data Architect,"Atlanta, GA",155250,142087,8
+Data Architect,"Houston, TX",155057,142087,8
+Data Architect,Orange County,154143,142087,8
+Data Architect,"Phoenix – Mesa – Scottsdale, AZ",153222,142087,7
+Data Architect,"Boston, MA",153143,142087,7
+Data Analyst,"San Francisco, CA",111249,80127,28
+Data Analyst,Remote,98369,80127,19
+Data Analyst,Orange County,95500,80127,16
+Data Analyst,"Los Angeles, CA",94019,80127,15
+Data Analyst,"New York City, NY",93217,80127,14
+Data Analyst,"Austin, TX",91423,80127,12
+Data Analyst,"Madison, WI",90389,80127,11
+Data Analyst,Washington DC,87725,80127,9
+Data Analyst,"Houston, TX",86111,80127,7
+Data Analyst,"Seattle, WA",86089,80127,7
+Data Scientist,"San Francisco, CA",170295,120268,29
+Data Scientist,Remote,155008,120268,22
+Data Scientist,"Madison, WI",138750,120268,15
+Data Scientist,"Charlotte, NC",131333,120268,9
+Data Scientist,"New York City, NY",136934,120268,12
+Data Scientist,"Los Angeles, CA",131227,120268,8
+Data Scientist,"Seattle, WA",131105,120268,8
+Data Scientist,"Boston, MA",130576,120268,8
+Data Scientist,"Salt Lake City, UT",129857,120268,7
+Data Scientist,"Chicago, IL",156029,120268,30
+Data Architect,"Boston, MA",166167,142087,17
+Data Architect,"Seattle, WA",159000,142087,12
+Data Architect,"Charlotte, NC",151000,142087,6
+Data Architect,"Los Angeles, CA",158091,142087,11
+Data Architect,"Salt Lake City, UT",148000,142087,4
+Data Analyst,"Boston, MA",92000,80127,15
+Data Analyst,"Seattle, WA",88000,80127,10
+Data Analyst,"Charlotte, NC",87000,80127,9
+Data Analyst,"Los Angeles, CA",90000,80127,12
+Data Analyst,"Salt Lake City, UT",85000,80127,6
